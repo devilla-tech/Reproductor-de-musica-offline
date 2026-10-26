@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+
+  <meta
+    name="theme-color"
+    content="#06111b"
+  >
+
+  <meta
+    name="apple-mobile-web-app-capable"
+    content="yes"
+  >
+
+  <meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="black-translucent"
+  >
+
+  <link
+    rel="manifest"
+    href="manifest.json"
+  >
+
+  <link
+    rel="stylesheet"
+    href="styles.css"
+  >
+
+  <title>Nova Music</title>
+</head>
+
+<body>
+
+<main
+  class="phone"
+  data-page="home"
+>
+
+  <!-- STATUS BAR -->
+
+  <div class="status-bar">
+
+
+   
+  </div>
+
+
+  <!-- INICIO -->
+
+  <section class="view active">
+
+
+    <!-- HEADER -->
+
+    <header class="home-header">
+
+      <div>
+
+        <h1>
+          Hola, Francisco
+        </h1>
+
+        <p>
+          ¿Qué quieres escuchar hoy?
+        </p>
+
+      </div>
+
+
+      <a
+        class="settings-btn"
+        href="ajustes.html"
+      >
+        ⚙
+      </a>
+
+    </header>
+
+
+
+    <!-- BUSCADOR -->
+
+    <a
+      href="buscar.html"
+      class="search-box fake-search"
+    >
+
+      <span class="search-icon">
+        ⌕
+      </span>
+
+      <span>
+        Buscar canciones, artistas o playlists...
+      </span>
+
+    </a>
+
+
+
+    <!-- CATEGORÍAS -->
+
+    <div class="categories">
+
+
+      <!-- PARA TI -->
+
+      <a
+        class="category"
+        href="parati.html"
+      >
+
+        <div class="category-icon purple">
+          ♫
+        </div>
+
+        <span>
+          Para ti
+        </span>
+
+      </a>
+
+
+
+      <!-- TENDENCIAS -->
+
+      <a
+        class="category"
+        href="tendencias.html"
+      >
+
+        <div class="category-icon">
+          🔥
+        </div>
+
+        <span>
+          Tendencias
+        </span>
+
+      </a>
+
+
+
+      <!-- ÉXITOS -->
+
+      <a
+        class="category"
+        href="exitos.html"
+      >
+
+        <div class="category-icon">
+          ⭐
+        </div>
+
+        <span>
+          Éxitos
+        </span>
+
+      </a>
+
+
+
+      <!-- GÉNEROS -->
+
+      <a
+        class="category"
+        href="generos.html"
+      >
+
+        <div class="category-icon">
+          ◉
+        </div>
+
+        <span>
+          Géneros
+        </span>
+
+      </a>
+
+
+
+      <!-- FAVORITOS -->
+
+      <a
+        class="category"
+        href="favoritos.html"
+      >
+
+        <div class="category-icon">
+          ❤
+        </div>
+
+        <span>
+          Favoritos
+        </span>
+
+      </a>
+
+    </div>
+
+
+
+    <!-- HECHO PARA TI -->
+
+    <div class="section-header">
+
+      <h2>
+        Hecho para ti
+      </h2>
+
+      <a href="parati.html">
+        Ver todo ›
+      </a>
+
+    </div>
+
+
+
+    <div class="mix-container">
+
+
+      <!-- MIX -->
+
+      <a
+        class="mix-card mix1"
+        href="parati.html"
+      >
+
+        <div class="mix-overlay">
+
+          <h3>
+            Mi Mix Diario
+          </h3>
+
+          <p>
+            Música basada en tus gustos
+          </p>
+
+        </div>
+
+      </a>
+
+
+
+      <!-- ÉXITOS -->
+
+      <a
+        class="mix-card mix2"
+        href="exitos.html"
+      >
+
+        <div class="mix-overlay">
+
+          <h3>
+            Éxitos 2026
+          </h3>
+
+          <p>
+            Lo más escuchado este año
+          </p>
+
+        </div>
+
+      </a>
+
+
+
+      <!-- CONCENTRACIÓN -->
+
+      <a
+        class="mix-card mix3"
+        href="generos.html"
+      >
+
+        <div class="mix-overlay">
+
+          <h3>
+            Música para concentrarte
+          </h3>
+
+          <p>
+            Productividad y enfoque
+          </p>
+
+        </div>
+
+      </a>
+
+    </div>
+
+
+
+    <!-- RECIENTES -->
+
+    <div class="section-header recent-header">
+
+      <h2>
+        Escuchado recientemente
+      </h2>
+
+      <a href="biblioteca.html">
+        Ver todo ›
+      </a>
+
+    </div>
+
+
+
+    <!-- LISTA -->
+
+    <div
+      id="homeSongList"
+      class="song-list"
+    >
+    </div>
+
+
+
+    <!-- VACÍO -->
+
+    <div
+      id="emptyHome"
+      class="empty-state"
+    >
+
+      <div class="empty-music">
+        ♫
+      </div>
+
+      <p>
+        Aún no tienes canciones.
+      </p>
+
+      <button
+        data-action="add-music"
+      >
+        Agregar música
+      </button>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- MINI PLAYER -->
+
+  <div
+    id="globalMiniPlayer"
+    class="mini-player hidden"
+  >
+
+    <div class="mini-cover">
+      ♫
+    </div>
+
+
+    <div class="mini-info">
+
+      <strong id="miniTitle">
+        Sin canción
+      </strong>
+
+      <span id="miniArtist">
+        Archivo local
+      </span>
+
+    </div>
+
+
+    <button
+      id="miniPlayBtn"
+      aria-label="Reproducir"
+    >
+      ▶
+    </button>
+
+
+    <a
+      href="reproductor.html"
+      class="queue-link"
+    >
+      ☷
+    </a>
+
+  </div>
+
+
+
+  <!-- NAV INFERIOR -->
+
+  <nav class="bottom-nav">
+
+
+    <!-- INICIO -->
+
+    <a
+      href="index.html"
+      class="nav-button"
+      data-page="home"
+    >
+
+      <span>
+        ⬟
+      </span>
+
+      <small>
+        Inicio
+      </small>
+
+    </a>
+
+
+
+    <!-- BUSCAR -->
+
+    <a
+      href="buscar.html"
+      class="nav-button"
+      data-page="search"
+    >
+
+      <span>
+        ⌕
+      </span>
+
+      <small>
+        Buscar
+      </small>
+
+    </a>
+
+
+
+    <!-- BIBLIOTECA -->
+
+    <a
+      href="biblioteca.html"
+      class="nav-button"
+      data-page="library"
+    >
+
+      <span>
+        ▥
+      </span>
+
+      <small>
+        Biblioteca
+      </small>
+
+    </a>
+
+
+
+    <!-- PREMIUM -->
+
+    <a
+      href="premium.html"
+      class="nav-button"
+      data-page="premium"
+    >
+
+      <span>
+        ◇
+      </span>
+
+      <small>
+        Premium
+      </small>
+
+    </a>
+
+  </nav>
+
+
+
+  <!-- ARCHIVO DE MÚSICA -->
+
+  <input
+    id="fileInput"
+    type="file"
+    accept="audio/*"
+    multiple
+    hidden
+  >
+
+
+
+  <!-- AUDIO -->
+
+  <audio
+    id="audio"
+    preload="metadata"
+  >
+  </audio>
+
+
+  <script src="app.js"></script>
+
+</main>
+
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1">
+
+  <meta
+    name="theme-color"
+    content="#06111b">
+
+  <link
+    rel="manifest"
+    href="manifest.json">
+
+  <link
+    rel="stylesheet"
+    href="styles.css">
+
+  <title>Reproductor</title>
+
+</head>
+
+<body>
+
+<main
+  class="phone"
+  data-page="player">
+
+
+  <div class="status-bar">
+
+    <span>
+      9:41
+    </span>
+
+    <div class="status-icons">
+      ▮▮▮ ))) ▣
+    </div>
+
+  </div>
+
+
+
+  <section class="view player-view">
+
+
+    <div class="player-header">
+
+
+      <a
+        href="index.html"
+        class="round-button">
+
+        ‹
+
+      </a>
+
+
+      <div>
+
+        <strong>
+          Reproduciendo
+        </strong>
+
+        <small>
+          Biblioteca offline
+        </small>
+
+      </div>
+
+
+      <button
+        id="favoriteBtn"
+        class="round-button">
+
+        ♡
+
+      </button>
+
+    </div>
+
+
+
+    <div class="album-cover">
+
+      <div class="album-note">
+        ♫
+      </div>
+
+    </div>
+
+
+
+    <div class="player-info">
+
+      <div>
+
+        <h2 id="playerTitle">
+          Sin canción
+        </h2>
+
+        <p id="playerArtist">
+          Archivo local
+        </p>
+
+      </div>
+
+
+      <button
+        id="favoriteBig"
+        class="favorite">
+
+        ♡
+
+      </button>
+
+    </div>
+
+
+
+    <input
+      id="seek"
+      class="seek"
+      type="range"
+      min="0"
+      value="0">
+
+
+    <div class="time">
+
+      <span id="currentTime">
+        0:00
+      </span>
+
+      <span id="duration">
+        0:00
+      </span>
+
+    </div>
+
+
+
+    <div class="player-controls">
+
+      <button id="shuffleBtn">
+        ⤨
+      </button>
+
+      <button id="prevBtn">
+        ⏮
+      </button>
+
+      <button
+        id="playBtn"
+        class="main-play">
+
+        ▶
+
+      </button>
+
+      <button id="nextBtn">
+        ⏭
+      </button>
+
+      <button id="repeatBtn">
+        ↻
+      </button>
+
+    </div>
+
+
+
+    <button
+      id="deleteCurrentBtn"
+      class="delete-song">
+
+      Eliminar canción
+
+    </button>
+
+  </section>
+
+
+  <audio
+    id="audio"
+    preload="metadata">
+  </audio>
+
+
+</main>
+
+
+<script src="app.js"></script>
+
+</body>
+</html>

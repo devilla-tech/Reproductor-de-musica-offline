@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1">
+
+<link
+rel="manifest"
+href="manifest.json">
+
+<link
+rel="stylesheet"
+href="styles.css">
+
+<title>Favoritos</title>
+
+</head>
+
+<body>
+
+<main
+class="phone"
+data-page="favorites">
+
+<div class="status-bar">
+
+<span>9:41</span>
+
+<div class="status-icons">
+▮▮▮ ))) ▣
+</div>
+
+</div>
+
+
+<section class="view">
+
+<header class="page-header">
+
+<a
+href="index.html"
+class="back-link">
+‹
+</a>
+
+<h1>
+Favoritos
+</h1>
+
+<span></span>
+
+</header>
+
+
+<div class="feature-hero">
+
+<div class="feature-icon">
+❤
+</div>
+
+<h2>
+Tus favoritos
+</h2>
+
+<p>
+Aquí aparecerán todas las canciones que marques con corazón.
+</p>
+
+</div>
+
+
+<div
+id="favoritesList"
+class="song-list feature-list">
+</div>
+
+
+<div
+id="favoritesListEmpty"
+class="empty-state">
+
+<p>
+Todavía no tienes canciones favoritas.
+</p>
+
+</div>
+
+</section>
+
+
+<div
+id="globalMiniPlayer"
+class="mini-player hidden">
+
+<div class="mini-cover">
+♫
+</div>
+
+<div class="mini-info">
+
+<strong id="miniTitle"></strong>
+
+<span id="miniArtist"></span>
+
+</div>
+
+<button id="miniPlayBtn">
+▶
+</button>
+
+<a href="reproductor.html">
+☷
+</a>
+
+</div>
+
+
+<nav class="bottom-nav">
+
+<a
+href="index.html"
+class="nav-button"
+data-page="home">
+
+<span>⬟</span>
+<small>Inicio</small>
+
+</a>
+
+
+<a
+href="buscar.html"
+class="nav-button"
+data-page="search">
+
+<span>⌕</span>
+<small>Buscar</small>
+
+</a>
+
+
+<a
+href="biblioteca.html"
+class="nav-button"
+data-page="library">
+
+<span>▥</span>
+<small>Biblioteca</small>
+
+</a>
+
+
+<a
+href="premium.html"
+class="nav-button"
+data-page="premium">
+
+<span>◇</span>
+<small>Premium</small>
+
+</a>
+
+</nav>
+
+
+<audio
+id="audio"
+preload="metadata">
+</audio>
+
+</main>
+
+<script src="app.js"></script>
+
+</body>
+
+</html>
