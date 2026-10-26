@@ -1,288 +1,473 @@
+const RAPID_API_KEY = "bfc61495bdmsh27d4202f3fc9a11p1b93b8jsn28435328d6e5";
+
+const RAPID_API_HOST =
+    "youtube-mp3-audio-video-downloader.p.rapidapi.com";
+
+
+async function obtenerInfoVideo(videoId) {
+
+    const url =
+        `https://${RAPID_API_HOST}/get-videos-info/${encodeURIComponent(videoId)}?response_mode=default`;
+
+
+    console.log(
+        "Consultando:",
+        url
+    );
+
+
+    const response =
+        await fetch(
+            url,
+            {
+                method: "GET",
+
+                headers: {
+
+                    "accept":
+                        "application/json",
+
+                    "x-rapidapi-host":
+                        RAPID_API_HOST,
+
+                    "x-rapidapi-key":
+                        RAPID_API_KEY
+
+                }
+            }
+        );
+
+
+    console.log(
+        "INFO STATUS:",
+        response.status
+    );
+
+
+    if(!response.ok) {
+
+        const texto =
+            await response.text();
+
+
+        console.error(
+            texto
+        );
+
+
+        throw new Error(
+            `Error API: ${response.status}`
+        );
+
+    }
+
+
+    return await response.json();
+
+}
+
+
+
+async function descargarAudioMP3(videoId) {
+
+    const url =
+        `https://${RAPID_API_HOST}/download-mp3/${encodeURIComponent(videoId)}?quality=high`;
+
+
+    console.log(
+        "Descargando:",
+        url
+    );
+
+
+    const response =
+        await fetch(
+            url,
+            {
+                method: "GET",
+
+                headers: {
+
+                    "x-rapidapi-host":
+                        RAPID_API_HOST,
+
+                    "x-rapidapi-key":
+                        RAPID_API_KEY
+
+                }
+            }
+        );
+
+
+    console.log(
+        "DOWNLOAD STATUS:",
+        response.status
+    );
+
+
+    console.log(
+        "CONTENT TYPE:",
+        response.headers.get(
+            "content-type"
+        )
+    );
+
+
+    if(!response.ok) {
+
+        const texto =
+            await response.text();
+
+
+        console.error(
+            "ERROR API:",
+            texto
+        );
+
+
+        throw new Error(
+            `Error descargando: ${response.status}`
+        );
+
+    }
+
+
+    const contentType =
+        response.headers.get(
+            "content-type"
+        )
+        ||
+        "";
+
+
+    /*
+       SI LA API DEVUELVE JSON
+    */
+
+    if(
+        contentType.includes(
+            "application/json"
+        )
+    ) {
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            "JSON DOWNLOAD:",
+            data
+        );
+
+
+        return {
+
+            type:
+                "json",
+
+            data:
+                data
+
+        };
+
+    }
+
+
+    /*
+       SI DEVUELVE EL AUDIO DIRECTAMENTE
+    */
+
+    const blob =
+        await response.blob();
+
+
+    console.log(
+        "BLOB:",
+        blob.type,
+        blob.size
+    );
+
+
+    return {
+
+        type:
+            "blob",
+
+        blob:
+            blob
+
+    };
+
+}
+
+
+
 const DB_NAME = "nova-music-db";
-
 const STORE = "songs";
-
 const DB_VERSION = 2;
 
-
 let db;
-
 let songs = [];
-
 let currentIndex = -1;
-
 let currentUrl = null;
-
 let deferredPrompt = null;
 
-
-const audio =
-document.getElementById("audio");
+const audio = document.getElementById("audio");
 
 
-
-/* ==================================
-   DATABASE
-================================== */
+/* =========================================================
+   INDEXED DB
+========================================================= */
 
 function openDB() {
 
-    return new Promise(
-        (resolve, reject) => {
+    return new Promise((resolve, reject) => {
 
-            const request =
-            indexedDB.open(
-                DB_NAME,
-                DB_VERSION
-            );
+        const request = indexedDB.open(
+            DB_NAME,
+            DB_VERSION
+        );
 
 
-            request.onupgradeneeded =
-            event => {
+        request.onupgradeneeded = event => {
 
-                const database =
+            const database =
                 event.target.result;
 
 
-                if(
-                    !database
+            if(
+                !database
                     .objectStoreNames
                     .contains(STORE)
-                ) {
+            ) {
 
-                    database
-                    .createObjectStore(
-                        STORE,
-                        {
-                            keyPath: "id",
-                            autoIncrement: true
-                        }
-                    );
-
-                }
-
-            };
-
-
-            request.onsuccess =
-            event => {
-
-                resolve(
-                    event.target.result
+                database.createObjectStore(
+                    STORE,
+                    {
+                        keyPath: "id",
+                        autoIncrement: true
+                    }
                 );
 
-            };
+            }
+
+        };
 
 
-            request.onerror =
-            () => {
+        request.onsuccess = event => {
 
-                reject(
-                    request.error
-                );
+            resolve(
+                event.target.result
+            );
 
-            };
+        };
 
-        }
-    );
+
+        request.onerror = () => {
+
+            reject(
+                request.error
+            );
+
+        };
+
+    });
 
 }
 
 
-
-function store(
-    mode = "readonly"
-) {
+function store(mode = "readonly") {
 
     return db
-
-    .transaction(
-        STORE,
-        mode
-    )
-
-    .objectStore(
-        STORE
-    );
+        .transaction(
+            STORE,
+            mode
+        )
+        .objectStore(
+            STORE
+        );
 
 }
-
 
 
 function getAllSongs() {
 
-    return new Promise(
-        (resolve, reject) => {
+    return new Promise((resolve, reject) => {
 
-            const request =
+        const request =
             store().getAll();
 
 
-            request.onsuccess =
-            () => {
+        request.onsuccess = () => {
 
-                resolve(
-                    request.result || []
-                );
+            resolve(
+                request.result || []
+            );
 
-            };
+        };
 
 
-            request.onerror =
-            () => {
+        request.onerror = () => {
 
-                reject(
-                    request.error
-                );
+            reject(
+                request.error
+            );
 
-            };
+        };
 
-        }
-    );
+    });
 
 }
-
 
 
 function addSong(song) {
 
-    return new Promise(
-        (resolve, reject) => {
+    return new Promise((resolve, reject) => {
 
-            const request =
-
+        const request =
             store("readwrite")
-            .add(song);
+                .add(song);
 
 
-            request.onsuccess =
-            () => resolve();
+        request.onsuccess = () => {
+
+            resolve(
+                request.result
+            );
+
+        };
 
 
-            request.onerror =
-            () => reject(
+        request.onerror = () => {
+
+            reject(
                 request.error
             );
 
-        }
-    );
+        };
+
+    });
 
 }
-
 
 
 function updateSong(song) {
 
-    return new Promise(
-        (resolve, reject) => {
+    return new Promise((resolve, reject) => {
 
-            const request =
-
+        const request =
             store("readwrite")
-            .put(song);
+                .put(song);
 
 
-            request.onsuccess =
-            () => resolve();
+        request.onsuccess = () => {
+
+            resolve();
+
+        };
 
 
-            request.onerror =
-            () => reject(
+        request.onerror = () => {
+
+            reject(
                 request.error
             );
 
-        }
-    );
+        };
+
+    });
 
 }
-
 
 
 function deleteSong(id) {
 
-    return new Promise(
-        (resolve, reject) => {
+    return new Promise((resolve, reject) => {
 
-            const request =
-
+        const request =
             store("readwrite")
-            .delete(id);
+                .delete(id);
 
 
-            request.onsuccess =
-            () => resolve();
+        request.onsuccess = () => {
+
+            resolve();
+
+        };
 
 
-            request.onerror =
-            () => reject(
+        request.onerror = () => {
+
+            reject(
                 request.error
             );
 
-        }
-    );
+        };
+
+    });
 
 }
-
 
 
 function clearLibrary() {
 
-    return new Promise(
-        (resolve, reject) => {
+    return new Promise((resolve, reject) => {
 
-            const request =
-
+        const request =
             store("readwrite")
-            .clear();
+                .clear();
 
 
-            request.onsuccess =
-            () => resolve();
+        request.onsuccess = () => {
+
+            resolve();
+
+        };
 
 
-            request.onerror =
-            () => reject(
+        request.onerror = () => {
+
+            reject(
                 request.error
             );
 
-        }
-    );
+        };
+
+    });
 
 }
 
 
 
-/* ==================================
-   IMPORTAR
-================================== */
+/* =========================================================
+   IMPORTAR MÚSICA LOCAL
+========================================================= */
 
-function songName(filename) {
+function getSongName(filename) {
 
     const clean =
-
-    filename.replace(
-        /\.[^/.]+$/,
-        ""
-    );
+        filename.replace(
+            /\.[^/.]+$/,
+            ""
+        );
 
 
     const parts =
-    clean.split(" - ");
+        clean.split(" - ");
 
 
-    if(
-        parts.length >= 2
-    ) {
+    if(parts.length >= 2) {
 
         return {
 
             artist:
-            parts[0],
+                parts[0].trim(),
 
             title:
-            parts
-            .slice(1)
-            .join(" - ")
+                parts
+                    .slice(1)
+                    .join(" - ")
+                    .trim()
 
         };
 
@@ -292,27 +477,23 @@ function songName(filename) {
     return {
 
         artist:
-        "Archivo local",
+            "Archivo local",
 
         title:
-        clean
+            clean
 
     };
 
 }
 
 
-
 async function importMusic(files) {
 
-    for(
-        const file
-        of files
-    ) {
+    for(const file of files) {
 
         if(
             !file.type
-            .startsWith("audio/")
+                .startsWith("audio/")
         ) {
 
             continue;
@@ -321,92 +502,131 @@ async function importMusic(files) {
 
 
         const info =
-        songName(
-            file.name
-        );
+            getSongName(
+                file.name
+            );
 
 
         await addSong({
 
             title:
-            info.title,
+                info.title,
 
             artist:
-            info.artist,
+                info.artist,
 
             blob:
-            file,
+                file,
+
+            thumbnail:
+                "",
 
             addedAt:
-            Date.now(),
+                Date.now(),
 
             favorite:
-            false,
+                false,
 
             plays:
-            0,
+                0,
 
             lastPlayed:
-            0,
+                0,
 
             genre:
-            "Otros"
+                "Otros"
 
         });
 
     }
 
 
-    await refresh();
+    await refreshSongs();
 
 }
 
 
 
-/* ==================================
-   REFRESH
-================================== */
+/* =========================================================
+   REFRESCAR
+========================================================= */
 
-async function refresh() {
+async function refreshSongs() {
 
     songs =
-    await getAllSongs();
+        await getAllSongs();
 
 
     songs.sort(
-        (a,b) =>
-        b.addedAt -
-        a.addedAt
+        (a, b) =>
+            b.addedAt
+            -
+            a.addedAt
     );
 
 
-    renderPage();
+    renderCurrentPage();
 
 }
 
 
 
-/* ==================================
-   HTML SONG
-================================== */
+/* =========================================================
+   SEGURIDAD HTML
+========================================================= */
+
+function escapeHTML(text) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+
+    div.textContent =
+        text ?? "";
+
+
+    return div.innerHTML;
+
+}
+
+
+
+/* =========================================================
+   ELEMENTO CANCIÓN
+========================================================= */
 
 function createSongRow(song) {
 
     const row =
-    document.createElement(
-        "div"
-    );
+        document.createElement(
+            "div"
+        );
 
 
     row.className =
-    "song-item";
+        "song-item";
+
+
+    const cover = song.thumbnail
+
+        ? `
+            <img
+                src="${escapeHTML(song.thumbnail)}"
+                class="song-image"
+                alt=""
+            >
+        `
+
+        : "♫";
 
 
     row.innerHTML = `
 
         <div class="song-cover">
 
-            ♫
+            ${cover}
 
         </div>
 
@@ -424,7 +644,11 @@ function createSongRow(song) {
         </div>
 
 
-        <button class="song-more">
+        <button
+            class="song-more"
+            type="button"
+            aria-label="Favorito"
+        >
 
             ${
                 song.favorite
@@ -441,19 +665,19 @@ function createSongRow(song) {
 
     row.addEventListener(
         "click",
-        event => {
+        async event => {
 
             if(
                 event.target
-                .classList
-                .contains(
-                    "song-more"
-                )
+                    .classList
+                    .contains(
+                        "song-more"
+                    )
             ) {
 
                 event.stopPropagation();
 
-                toggleFavorite(
+                await toggleFavorite(
                     song.id
                 );
 
@@ -462,7 +686,7 @@ function createSongRow(song) {
             }
 
 
-            playSong(
+            await playSong(
                 song.id,
                 true
             );
@@ -477,38 +701,20 @@ function createSongRow(song) {
 
 
 
-function escapeHTML(text) {
-
-    const div =
-    document.createElement(
-        "div"
-    );
-
-
-    div.textContent =
-    text;
-
-
-    return div.innerHTML;
-
-}
-
-
-
-/* ==================================
-   LISTAS
-================================== */
+/* =========================================================
+   LLENAR LISTA
+========================================================= */
 
 function fillList(
-    id,
+    containerId,
     list,
-    empty
+    emptyId
 ) {
 
     const container =
-    document.getElementById(
-        id
-    );
+        document.getElementById(
+            containerId
+        );
 
 
     if(!container) {
@@ -519,35 +725,34 @@ function fillList(
 
 
     container.innerHTML =
-    "";
+        "";
 
 
-    list.forEach(
-        song => {
+    list.forEach(song => {
 
-            container
-            .appendChild(
-                createSongRow(song)
-            );
-
-        }
-    );
-
-
-    const emptyElement =
-    document.getElementById(
-        empty
-    );
-
-
-    if(emptyElement) {
-
-        emptyElement
-        .classList
-        .toggle(
-            "hidden",
-            list.length > 0
+        container.appendChild(
+            createSongRow(
+                song
+            )
         );
+
+    });
+
+
+    const empty =
+        document.getElementById(
+            emptyId
+        );
+
+
+    if(empty) {
+
+        empty
+            .classList
+            .toggle(
+                "hidden",
+                list.length > 0
+            );
 
     }
 
@@ -555,50 +760,43 @@ function fillList(
 
 
 
-/* ==================================
-   RENDER PAGE
-================================== */
+/* =========================================================
+   RENDER PÁGINA
+========================================================= */
 
-function renderPage() {
+function renderCurrentPage() {
 
     const phone =
-    document.querySelector(
-        ".phone"
-    );
+        document.querySelector(
+            ".phone"
+        );
 
 
     const page =
-    phone
-    ?
-    phone.dataset.page
-    :
-    "";
+        phone
+        ?
+        phone.dataset.page
+        :
+        "";
 
 
     document
-    .querySelectorAll(
-        ".nav-button"
-    )
-    .forEach(
-        button => {
+        .querySelectorAll(
+            ".nav-button"
+        )
+        .forEach(button => {
 
             button
-            .classList
-            .toggle(
-                "active",
-                button.dataset.page
-                ===
-                page
-            );
+                .classList
+                .toggle(
+                    "active",
+                    button.dataset.page === page
+                );
 
-        }
-    );
+        });
 
 
-
-    if(
-        page === "home"
-    ) {
+    if(page === "home") {
 
         fillList(
 
@@ -616,10 +814,7 @@ function renderPage() {
     }
 
 
-
-    if(
-        page === "library"
-    ) {
+    if(page === "library") {
 
         fillList(
 
@@ -634,10 +829,7 @@ function renderPage() {
     }
 
 
-
-    if(
-        page === "favorites"
-    ) {
+    if(page === "favorites") {
 
         fillList(
 
@@ -645,7 +837,7 @@ function renderPage() {
 
             songs.filter(
                 song =>
-                song.favorite
+                    song.favorite
             ),
 
             "favoritesListEmpty"
@@ -655,24 +847,16 @@ function renderPage() {
     }
 
 
-
-    if(
-        page === "for-you"
-    ) {
+    if(page === "for-you") {
 
         const ordered =
-
-        [...songs]
-        .sort(
-            (a,b) =>
-
-            (b.plays || 0)
-
-            -
-
-            (a.plays || 0)
-
-        );
+            [...songs]
+                .sort(
+                    (a, b) =>
+                        (b.plays || 0)
+                        -
+                        (a.plays || 0)
+                );
 
 
         fillList(
@@ -688,31 +872,23 @@ function renderPage() {
     }
 
 
+    if(page === "trending") {
 
-    if(
-        page === "trending"
-    ) {
-
-        const recent =
-
-        [...songs]
-        .sort(
-            (a,b) =>
-
-            (b.lastPlayed || 0)
-
-            -
-
-            (a.lastPlayed || 0)
-
-        );
+        const ordered =
+            [...songs]
+                .sort(
+                    (a, b) =>
+                        (b.lastPlayed || 0)
+                        -
+                        (a.lastPlayed || 0)
+                );
 
 
         fillList(
 
             "trendingList",
 
-            recent,
+            ordered,
 
             "trendingListEmpty"
 
@@ -721,53 +897,43 @@ function renderPage() {
     }
 
 
+    if(page === "hits") {
 
-    if(
-        page === "hits"
-    ) {
+        const ordered =
+            [...songs]
+                .sort(
+                    (a, b) => {
 
-        const hits =
+                        if(
+                            a.favorite
+                            !==
+                            b.favorite
+                        ) {
 
-        [...songs]
-        .sort(
-            (a,b) => {
+                            return (
+                                Number(b.favorite)
+                                -
+                                Number(a.favorite)
+                            );
 
-                if(
-                    a.favorite
-                    !==
-                    b.favorite
-                ) {
-
-                    return Number(
-                        b.favorite
-                    )
-                    -
-                    Number(
-                        a.favorite
-                    );
-
-                }
+                        }
 
 
-                return (
+                        return (
+                            (b.plays || 0)
+                            -
+                            (a.plays || 0)
+                        );
 
-                    (b.plays || 0)
-
-                    -
-
-                    (a.plays || 0)
-
+                    }
                 );
-
-            }
-        );
 
 
         fillList(
 
             "hitsList",
 
-            hits,
+            ordered,
 
             "hitsListEmpty"
 
@@ -776,32 +942,14 @@ function renderPage() {
     }
 
 
+    if(page === "search") {
 
-    if(
-        page === "search"
-    ) {
-
-        searchSongs();
+        searchLocal();
 
     }
 
 
-
-    if(
-        page === "genres"
-    ) {
-
-        filterGenre(
-            "Otros"
-        );
-
-    }
-
-
-
-    if(
-        page === "player"
-    ) {
+    if(page === "player") {
 
         loadPlayer();
 
@@ -814,16 +962,16 @@ function renderPage() {
 
 
 
-/* ==================================
-   SEARCH
-================================== */
+/* =========================================================
+   BÚSQUEDA LOCAL
+========================================================= */
 
-function searchSongs() {
+function searchLocal() {
 
     const input =
-    document.getElementById(
-        "searchInput"
-    );
+        document.getElementById(
+            "searchInput"
+        );
 
 
     if(!input) {
@@ -834,41 +982,60 @@ function searchSongs() {
 
 
     const query =
+        input.value
+            .trim()
+            .toLowerCase();
 
-    input.value
-    .trim()
-    .toLowerCase();
+
+    if(
+        query.includes(
+            "youtube.com"
+        )
+
+        ||
+
+        query.includes(
+            "youtu.be"
+        )
+
+        ||
+
+        /^[a-zA-Z0-9_-]{11}$/
+            .test(query)
+    ) {
+
+        fillList(
+            "searchResults",
+            [],
+            "searchEmpty"
+        );
+
+        return;
+
+    }
 
 
-    const result =
+    const result = query
 
-    query
-
-    ?
-
-    songs.filter(
-        song => {
+        ? songs.filter(song => {
 
             return (
 
                 song.title
-                .toLowerCase()
-                .includes(query)
+                    .toLowerCase()
+                    .includes(query)
 
                 ||
 
                 song.artist
-                .toLowerCase()
-                .includes(query)
+                    .toLowerCase()
+                    .includes(query)
 
             );
 
-        }
-    )
+        })
 
-    :
-
-    [];
+        : [];
 
 
     fillList(
@@ -885,18 +1052,916 @@ function searchSongs() {
 
 
 
-/* ==================================
+/* =========================================================
+   EXTRAER ID YOUTUBE
+========================================================= */
+
+function obtenerYouTubeId(value) {
+
+    value =
+        value.trim();
+
+
+    if(
+        /^[a-zA-Z0-9_-]{11}$/
+            .test(value)
+    ) {
+
+        return value;
+
+    }
+
+
+    try {
+
+        const url =
+            new URL(value);
+
+
+        if(
+            url.hostname
+                .includes(
+                    "youtu.be"
+                )
+        ) {
+
+            return url.pathname
+                .replace(
+                    "/",
+                    ""
+                )
+                .substring(
+                    0,
+                    11
+                );
+
+        }
+
+
+        const video =
+            url.searchParams
+                .get("v");
+
+
+        if(video) {
+
+            return video.substring(
+                0,
+                11
+            );
+
+        }
+
+
+        if(
+            url.pathname
+                .includes(
+                    "/shorts/"
+                )
+        ) {
+
+            return url.pathname
+                .split(
+                    "/shorts/"
+                )[1]
+                ?.split("/")[0]
+                ?.substring(
+                    0,
+                    11
+                );
+
+        }
+
+    }
+    catch(error) {
+
+        return null;
+
+    }
+
+
+    return null;
+
+}
+
+
+
+/* =========================================================
+   BUSCAR VIDEO ONLINE
+========================================================= */
+
+const youtubeSearchBtn =
+    document.getElementById(
+        "youtubeSearchBtn"
+    );
+
+
+if(youtubeSearchBtn) {
+
+    youtubeSearchBtn
+        .addEventListener(
+            "click",
+            async () => {
+
+                const input =
+                    document.getElementById(
+                        "searchInput"
+                    );
+
+
+                const result =
+                    document.getElementById(
+                        "youtubeResult"
+                    );
+
+
+                if(
+                    !input
+                    ||
+                    !result
+                ) {
+
+                    return;
+
+                }
+
+
+                const value =
+                    input.value.trim();
+
+
+                if(!value) {
+
+                    result.innerHTML = `
+
+                        <p class="api-error">
+
+                            Escribe una URL o ID de YouTube.
+
+                        </p>
+
+                    `;
+
+                    return;
+
+                }
+
+
+                const videoId =
+                    obtenerYouTubeId(
+                        value
+                    );
+
+
+                if(!videoId) {
+
+                    result.innerHTML = `
+
+                        <p class="api-error">
+
+                            No pude obtener el ID del video.
+
+                        </p>
+
+                    `;
+
+                    return;
+
+                }
+
+
+                result.innerHTML = `
+
+                    <div class="loading-api">
+
+                        Buscando...
+
+                    </div>
+
+                `;
+
+
+                try {
+
+                    const data =
+                        await obtenerInfoVideo(
+                            videoId
+                        );
+
+
+                    console.log(
+                        "INFO VIDEO:",
+                        data
+                    );
+
+
+                    const video =
+                        data[videoId]
+                        ||
+                        data;
+
+
+                    if(
+                        !video
+                        ||
+                        !video.title
+                    ) {
+
+                        throw new Error(
+                            "No se encontró información del video."
+                        );
+
+                    }
+
+
+                    const thumbnails =
+                        video.thumbnail
+                        ||
+                        [];
+
+
+                    const thumbnail =
+                        thumbnails.length
+
+                        ?
+
+                        thumbnails[
+                            thumbnails.length - 1
+                        ].url
+
+                        :
+
+                        "";
+
+
+                    result.innerHTML = `
+
+                        <div class="youtube-card">
+
+
+                            ${
+                                thumbnail
+
+                                ?
+
+                                `
+                                <img
+                                    src="${escapeHTML(thumbnail)}"
+                                    class="youtube-cover"
+                                    alt=""
+                                >
+                                `
+
+                                :
+
+                                ""
+                            }
+
+
+                            <div class="youtube-card-info">
+
+
+                                <h3>
+
+                                    ${escapeHTML(
+                                        video.title
+                                    )}
+
+                                </h3>
+
+
+                                <p>
+
+                                    ${escapeHTML(
+                                        video.author
+                                        ||
+                                        "Artista desconocido"
+                                    )}
+
+                                </p>
+
+
+                                <span>
+
+                                    ${formatDuration(
+                                        Number(
+                                            video.lengthSeconds
+                                        )
+                                    )}
+
+                                </span>
+
+
+                                <button
+                                    type="button"
+                                    class="primary-wide download-online"
+
+                                    data-download-id="${videoId}"
+
+                                    data-title="${encodeURIComponent(
+                                        video.title
+                                    )}"
+
+                                    data-artist="${encodeURIComponent(
+                                        video.author
+                                        ||
+                                        "Artista desconocido"
+                                    )}"
+
+                                    data-thumbnail="${encodeURIComponent(
+                                        thumbnail
+                                    )}"
+                                >
+
+                                    ↓ Descargar
+
+                                </button>
+
+
+                                <div
+                                    class="download-message"
+                                    id="download-message-${videoId}"
+                                >
+                                </div>
+
+
+                            </div>
+
+                        </div>
+
+                    `;
+
+                }
+                catch(error) {
+
+                    console.error(
+                        "ERROR BUSCANDO VIDEO:",
+                        error
+                    );
+
+
+                    result.innerHTML = `
+
+                        <p class="api-error">
+
+                            Error: ${escapeHTML(
+                                error.message
+                            )}
+
+                        </p>
+
+                    `;
+
+                }
+
+            }
+        );
+
+}
+
+
+
+/* =========================================================
+   DESCARGA ONLINE
+========================================================= */
+
+document.addEventListener(
+    "click",
+    async event => {
+
+        const button =
+            event.target
+                .closest(
+                    "[data-download-id]"
+                );
+
+
+        if(!button) {
+
+            return;
+
+        }
+
+
+        event.preventDefault();
+
+
+        const videoId =
+            button.dataset.downloadId;
+
+
+        const title =
+            decodeURIComponent(
+                button.dataset.title
+                ||
+                "Canción"
+            );
+
+
+        const artist =
+            decodeURIComponent(
+                button.dataset.artist
+                ||
+                "Artista desconocido"
+            );
+
+
+        const thumbnail =
+            decodeURIComponent(
+                button.dataset.thumbnail
+                ||
+                ""
+            );
+
+
+        const message =
+            document.getElementById(
+                `download-message-${videoId}`
+            );
+
+
+        button.disabled =
+            true;
+
+
+        button.textContent =
+            "Descargando...";
+
+
+        if(message) {
+
+            message.textContent =
+                "Solicitando audio...";
+
+        }
+
+
+        try {
+
+            /*
+               descargarAudioMP3 está
+               definido en api.js
+            */
+
+            const resultado =
+                await descargarAudioMP3(
+                    videoId
+                );
+
+
+            console.log(
+                "RESULTADO DOWNLOAD:",
+                resultado
+            );
+
+
+            let audioBlob = null;
+
+
+
+            /* ==================================
+               CASO 1:
+               api.js devuelve directamente Blob
+            ================================== */
+
+            if(
+                resultado
+                instanceof Blob
+            ) {
+
+                audioBlob =
+                    resultado;
+
+            }
+
+
+
+            /* ==================================
+               CASO 2:
+               api.js devuelve { type:"blob" }
+            ================================== */
+
+            else if(
+                resultado
+                &&
+                resultado.type ===
+                "blob"
+            ) {
+
+                audioBlob =
+                    resultado.blob;
+
+            }
+
+
+
+            /* ==================================
+               CASO 3:
+               API devuelve JSON
+            ================================== */
+
+            else if(
+                resultado
+                &&
+                resultado.type ===
+                "json"
+            ) {
+
+                const data =
+                    resultado.data;
+
+
+                console.log(
+                    "JSON DE DESCARGA:",
+                    data
+                );
+
+
+                const downloadUrl =
+                    encontrarUrlAudio(
+                        data
+                    );
+
+
+                if(!downloadUrl) {
+
+                    throw new Error(
+                        "La API respondió JSON, pero no encontré la URL del audio."
+                    );
+
+                }
+
+
+                if(message) {
+
+                    message.textContent =
+                        "Obteniendo archivo de audio...";
+
+                }
+
+
+                const finalResponse =
+                    await fetch(
+                        downloadUrl
+                    );
+
+
+                if(
+                    !finalResponse.ok
+                ) {
+
+                    throw new Error(
+                        "No se pudo obtener el archivo final. HTTP "
+                        +
+                        finalResponse.status
+                    );
+
+                }
+
+
+                audioBlob =
+                    await finalResponse.blob();
+
+            }
+
+
+
+            /* ==================================
+               CASO 4:
+               JSON normal
+            ================================== */
+
+            else if(
+                resultado
+                &&
+                typeof resultado
+                ===
+                "object"
+            ) {
+
+                const downloadUrl =
+                    encontrarUrlAudio(
+                        resultado
+                    );
+
+
+                if(downloadUrl) {
+
+                    if(message) {
+
+                        message.textContent =
+                            "Obteniendo audio...";
+
+                    }
+
+
+                    const finalResponse =
+                        await fetch(
+                            downloadUrl
+                        );
+
+
+                    if(
+                        !finalResponse.ok
+                    ) {
+
+                        throw new Error(
+                            "Error descargando archivo final."
+                        );
+
+                    }
+
+
+                    audioBlob =
+                        await finalResponse.blob();
+
+                }
+
+            }
+
+
+
+            /* ==================================
+               VALIDAR BLOB
+            ================================== */
+
+            if(!audioBlob) {
+
+                throw new Error(
+                    "La API no devolvió ningún archivo de audio."
+                );
+
+            }
+
+
+            if(
+                audioBlob.size === 0
+            ) {
+
+                throw new Error(
+                    "El archivo recibido está vacío."
+                );
+
+            }
+
+
+            console.log(
+                "AUDIO BLOB:",
+                audioBlob.type,
+                audioBlob.size
+            );
+
+
+            if(message) {
+
+                message.textContent =
+                    "Guardando en tu biblioteca...";
+
+            }
+
+
+
+            /* ==================================
+               GUARDAR EN INDEXED DB
+            ================================== */
+
+            await addSong({
+
+                title:
+                    title,
+
+                artist:
+                    artist,
+
+                blob:
+                    audioBlob,
+
+                thumbnail:
+                    thumbnail,
+
+                addedAt:
+                    Date.now(),
+
+                favorite:
+                    false,
+
+                plays:
+                    0,
+
+                lastPlayed:
+                    0,
+
+                genre:
+                    "Otros"
+
+            });
+
+
+            await refreshSongs();
+
+
+            button.textContent =
+                "✓ Guardada";
+
+
+            if(message) {
+
+                message.textContent =
+                    "✓ Descargada correctamente";
+
+            }
+
+
+            setTimeout(
+                () => {
+
+                    location.href =
+                        "biblioteca.html";
+
+                },
+                1000
+            );
+
+        }
+        catch(error) {
+
+            console.error(
+                "ERROR DE DESCARGA:",
+                error
+            );
+
+
+            button.disabled =
+                false;
+
+
+            button.textContent =
+                "↓ Descargar";
+
+
+            if(message) {
+
+                message.textContent =
+                    "Error: "
+                    +
+                    error.message;
+
+            }
+
+
+            alert(
+                "No se pudo descargar:\n\n"
+                +
+                error.message
+            );
+
+        }
+
+    }
+);
+
+
+
+/* =========================================================
+   BUSCAR URL DE AUDIO EN JSON
+========================================================= */
+
+function encontrarUrlAudio(data) {
+
+    if(!data) {
+
+        return null;
+
+    }
+
+
+    /*
+       Campos comunes
+    */
+
+    const posibles = [
+
+        data.url,
+
+        data.downloadUrl,
+
+        data.download_url,
+
+        data.audioUrl,
+
+        data.audio_url,
+
+        data.link,
+
+        data.download,
+
+        data.file,
+
+        data.fileUrl,
+
+        data.file_url
+
+    ];
+
+
+    for(
+        const value
+        of posibles
+    ) {
+
+        if(
+            typeof value === "string"
+            &&
+            value.startsWith("http")
+        ) {
+
+            return value;
+
+        }
+
+    }
+
+
+    /*
+       Revisar objetos internos
+    */
+
+    for(
+        const key
+        of Object.keys(data)
+    ) {
+
+        const value =
+            data[key];
+
+
+        if(
+            typeof value === "string"
+            &&
+            value.startsWith("http")
+        ) {
+
+            const lower =
+                key.toLowerCase();
+
+
+            if(
+                lower.includes("audio")
+                ||
+                lower.includes("download")
+                ||
+                lower.includes("url")
+                ||
+                lower.includes("link")
+            ) {
+
+                return value;
+
+            }
+
+        }
+
+
+        if(
+            value
+            &&
+            typeof value === "object"
+        ) {
+
+            const found =
+                encontrarUrlAudio(
+                    value
+                );
+
+
+            if(found) {
+
+                return found;
+
+            }
+
+        }
+
+    }
+
+
+    return null;
+
+}
+
+
+
+/* =========================================================
    FAVORITOS
-================================== */
+========================================================= */
 
 async function toggleFavorite(id) {
 
     const song =
-
-    songs.find(
-        item =>
-        item.id === id
-    );
+        songs.find(
+            item =>
+                item.id === id
+        );
 
 
     if(!song) {
@@ -907,7 +1972,7 @@ async function toggleFavorite(id) {
 
 
     song.favorite =
-    !song.favorite;
+        !song.favorite;
 
 
     await updateSong(
@@ -915,7 +1980,7 @@ async function toggleFavorite(id) {
     );
 
 
-    await refresh();
+    await refreshSongs();
 
 
     updateFavoriteButtons();
@@ -924,18 +1989,18 @@ async function toggleFavorite(id) {
 
 
 
-/* ==================================
+/* =========================================================
    CURRENT SONG
-================================== */
+========================================================= */
 
 function currentSongId() {
 
     return Number(
 
         localStorage
-        .getItem(
-            "novaCurrentId"
-        )
+            .getItem(
+                "novaCurrentId"
+            )
 
         ||
 
@@ -947,9 +2012,9 @@ function currentSongId() {
 
 
 
-/* ==================================
+/* =========================================================
    PLAY SONG
-================================== */
+========================================================= */
 
 async function playSong(
     id,
@@ -957,11 +2022,10 @@ async function playSong(
 ) {
 
     const index =
-
-    songs.findIndex(
-        song =>
-        song.id === id
-    );
+        songs.findIndex(
+            song =>
+                song.id === id
+        );
 
 
     if(index === -1) {
@@ -972,21 +2036,21 @@ async function playSong(
 
 
     currentIndex =
-    index;
+        index;
 
 
     const song =
-    songs[index];
+        songs[index];
 
 
     song.plays =
-    (song.plays || 0)
-    +
-    1;
+        (song.plays || 0)
+        +
+        1;
 
 
     song.lastPlayed =
-    Date.now();
+        Date.now();
 
 
     await updateSong(
@@ -994,13 +2058,9 @@ async function playSong(
     );
 
 
-    localStorage
-    .setItem(
-
+    localStorage.setItem(
         "novaCurrentId",
-
         String(id)
-
     );
 
 
@@ -1016,14 +2076,13 @@ async function playSong(
 
 
         currentUrl =
-
-        URL.createObjectURL(
-            song.blob
-        );
+            URL.createObjectURL(
+                song.blob
+            );
 
 
         audio.src =
-        currentUrl;
+            currentUrl;
 
 
         try {
@@ -1046,13 +2105,13 @@ async function playSong(
         openPlayer
         &&
         !location.pathname
-        .endsWith(
-            "reproductor.html"
-        )
+            .endsWith(
+                "reproductor.html"
+            )
     ) {
 
         location.href =
-        "reproductor.html";
+            "reproductor.html";
 
         return;
 
@@ -1065,9 +2124,9 @@ async function playSong(
 
 
 
-/* ==================================
-   LOAD AUDIO
-================================== */
+/* =========================================================
+   CARGAR AUDIO ACTUAL
+========================================================= */
 
 function loadCurrentAudio() {
 
@@ -1079,15 +2138,14 @@ function loadCurrentAudio() {
 
 
     const id =
-    currentSongId();
+        currentSongId();
 
 
     const song =
-
-    songs.find(
-        item =>
-        item.id === id
-    );
+        songs.find(
+            item =>
+                item.id === id
+        );
 
 
     if(!song) {
@@ -1098,26 +2156,22 @@ function loadCurrentAudio() {
 
 
     currentIndex =
-
-    songs.findIndex(
-        item =>
-        item.id === id
-    );
-
-
-    if(
-        !audio.src
-    ) {
-
-        currentUrl =
-
-        URL.createObjectURL(
-            song.blob
+        songs.findIndex(
+            item =>
+                item.id === id
         );
 
 
+    if(!audio.src) {
+
+        currentUrl =
+            URL.createObjectURL(
+                song.blob
+            );
+
+
         audio.src =
-        currentUrl;
+            currentUrl;
 
     }
 
@@ -1125,22 +2179,19 @@ function loadCurrentAudio() {
 
 
 
-/* ==================================
-   PLAYER
-================================== */
+/* =========================================================
+   REPRODUCTOR
+========================================================= */
 
 function loadPlayer() {
 
-    const id =
-    currentSongId();
-
-
     const song =
-
-    songs.find(
-        item =>
-        item.id === id
-    );
+        songs.find(
+            item =>
+                item.id
+                ===
+                currentSongId()
+        );
 
 
     if(!song) {
@@ -1151,21 +2202,21 @@ function loadPlayer() {
 
 
     const title =
-    document.getElementById(
-        "playerTitle"
-    );
+        document.getElementById(
+            "playerTitle"
+        );
 
 
     const artist =
-    document.getElementById(
-        "playerArtist"
-    );
+        document.getElementById(
+            "playerArtist"
+        );
 
 
     if(title) {
 
         title.textContent =
-        song.title;
+            song.title;
 
     }
 
@@ -1173,7 +2224,7 @@ function loadPlayer() {
     if(artist) {
 
         artist.textContent =
-        song.artist;
+            song.artist;
 
     }
 
@@ -1186,16 +2237,16 @@ function loadPlayer() {
 
 
 
-/* ==================================
+/* =========================================================
    MINI PLAYER
-================================== */
+========================================================= */
 
 function setupMiniPlayer() {
 
     const mini =
-    document.getElementById(
-        "globalMiniPlayer"
-    );
+        document.getElementById(
+            "globalMiniPlayer"
+        );
 
 
     if(!mini) {
@@ -1206,21 +2257,20 @@ function setupMiniPlayer() {
 
 
     const song =
-
-    songs.find(
-        item =>
-        item.id
-        ===
-        currentSongId()
-    );
+        songs.find(
+            item =>
+                item.id
+                ===
+                currentSongId()
+        );
 
 
     mini
-    .classList
-    .toggle(
-        "hidden",
-        !song
-    );
+        .classList
+        .toggle(
+            "hidden",
+            !song
+        );
 
 
     if(!song) {
@@ -1231,21 +2281,21 @@ function setupMiniPlayer() {
 
 
     const title =
-    document.getElementById(
-        "miniTitle"
-    );
+        document.getElementById(
+            "miniTitle"
+        );
 
 
     const artist =
-    document.getElementById(
-        "miniArtist"
-    );
+        document.getElementById(
+            "miniArtist"
+        );
 
 
     if(title) {
 
         title.textContent =
-        song.title;
+            song.title;
 
     }
 
@@ -1253,7 +2303,7 @@ function setupMiniPlayer() {
     if(artist) {
 
         artist.textContent =
-        song.artist;
+            song.artist;
 
     }
 
@@ -1264,9 +2314,9 @@ function setupMiniPlayer() {
 
 
 
-/* ==================================
-   PLAY / PAUSE
-================================== */
+/* =========================================================
+   PLAY PAUSE
+========================================================= */
 
 function togglePlay() {
 
@@ -1277,13 +2327,9 @@ function togglePlay() {
     }
 
 
-    if(
-        !currentSongId()
-    ) {
+    if(!currentSongId()) {
 
-        if(
-            songs.length > 0
-        ) {
+        if(songs.length) {
 
             playSong(
                 songs[0].id
@@ -1299,9 +2345,7 @@ function togglePlay() {
     loadCurrentAudio();
 
 
-    if(
-        audio.paused
-    ) {
+    if(audio.paused) {
 
         audio.play();
 
@@ -1315,52 +2359,46 @@ function togglePlay() {
 }
 
 
-
 function syncPlayButton() {
 
     const icon =
+        audio
+        &&
+        !audio.paused
 
-    audio
-    &&
-    !audio.paused
+        ?
 
-    ?
+        "⏸"
 
-    "⏸"
+        :
 
-    :
-
-    "▶";
+        "▶";
 
 
     document
-    .querySelectorAll(
-        "#playBtn,#miniPlayBtn"
-    )
-    .forEach(
-        button => {
+        .querySelectorAll(
+            "#playBtn,#miniPlayBtn"
+        )
+        .forEach(button => {
 
             button.textContent =
-            icon;
+                icon;
 
-        }
-    );
+        });
 
 }
 
 
 
-/* ==================================
-   NEXT
-================================== */
+/* =========================================================
+   SIGUIENTE / ANTERIOR
+========================================================= */
 
 function nextSong(
     movement = 1
 ) {
 
-    if(
-        !songs.length
-    ) {
+    if(!songs.length) {
 
         return;
 
@@ -1368,38 +2406,31 @@ function nextSong(
 
 
     let index =
+        songs.findIndex(
+            song =>
+                song.id
+                ===
+                currentSongId()
+        );
 
-    songs.findIndex(
-        song =>
-        song.id
-        ===
-        currentSongId()
-    );
 
+    if(index < 0) {
 
-    if(
-        index < 0
-    ) {
-
-        index =
-        0;
+        index = 0;
 
     }
     else {
 
         index =
-
-        (
-            index
-            +
-            movement
-            +
-            songs.length
-        )
-
-        %
-
-        songs.length;
+            (
+                index
+                +
+                movement
+                +
+                songs.length
+            )
+            %
+            songs.length;
 
     }
 
@@ -1415,32 +2446,28 @@ function nextSong(
 
 
 
-/* ==================================
-   FAVORITE BUTTON PLAYER
-================================== */
+/* =========================================================
+   BOTONES FAVORITO
+========================================================= */
 
 function updateFavoriteButtons() {
 
     const song =
-
-    songs.find(
-        item =>
-        item.id
-        ===
-        currentSongId()
-    );
+        songs.find(
+            item =>
+                item.id
+                ===
+                currentSongId()
+        );
 
 
     document
-    .querySelectorAll(
-        "#favoriteBtn,#favoriteBig"
-    )
-    .forEach(
-        button => {
+        .querySelectorAll(
+            "#favoriteBtn,#favoriteBig"
+        )
+        .forEach(button => {
 
-            if(button) {
-
-                button.textContent =
+            button.textContent =
 
                 song
                 &&
@@ -1454,82 +2481,20 @@ function updateFavoriteButtons() {
 
                 "♡";
 
-            }
-
-        }
-    );
+        });
 
 }
 
 
 
-/* ==================================
-   GENRES
-================================== */
+/* =========================================================
+   FORMAT TIME
+========================================================= */
 
-function filterGenre(
-    genre
-) {
-
-    const container =
-    document.getElementById(
-        "genreResults"
-    );
-
-
-    if(!container) {
-
-        return;
-
-    }
-
-
-    container.innerHTML =
-    "";
-
-
-    const result =
-
-    genre === "Otros"
-
-    ?
-
-    songs
-
-    :
-
-    songs.filter(
-        song =>
-        song.genre === genre
-    );
-
-
-    result.forEach(
-        song => {
-
-            container
-            .appendChild(
-                createSongRow(song)
-            );
-
-        }
-    );
-
-}
-
-
-
-/* ==================================
-   TIME
-================================== */
-
-function formatTime(
-    seconds
-) {
+function formatDuration(seconds) {
 
     if(
-        !Number
-        .isFinite(
+        !Number.isFinite(
             seconds
         )
     ) {
@@ -1540,24 +2505,20 @@ function formatTime(
 
 
     const minutes =
-
-    Math.floor(
-        seconds / 60
-    );
+        Math.floor(
+            seconds / 60
+        );
 
 
     const secs =
-
-    Math.floor(
-        seconds % 60
-    )
-
-    .toString()
-
-    .padStart(
-        2,
-        "0"
-    );
+        Math.floor(
+            seconds % 60
+        )
+            .toString()
+            .padStart(
+                2,
+                "0"
+            );
 
 
     return `${minutes}:${secs}`;
@@ -1566,34 +2527,31 @@ function formatTime(
 
 
 
-/* ==================================
-   CLICKS
-================================== */
+/* =========================================================
+   CLICKS GENERALES
+========================================================= */
 
-document
-.addEventListener(
+document.addEventListener(
     "click",
     async event => {
 
 
         const addButton =
-
-        event.target
-        .closest(
-            '[data-action="add-music"]'
-        );
+            event.target
+                .closest(
+                    '[data-action="add-music"]'
+                );
 
 
         if(addButton) {
 
             document
-            .getElementById(
-                "fileInput"
-            )
-            ?.click();
+                .getElementById(
+                    "fileInput"
+                )
+                ?.click();
 
         }
-
 
 
         if(
@@ -1611,7 +2569,6 @@ document
         }
 
 
-
         if(
             event.target.id
             ===
@@ -1623,17 +2580,17 @@ document
         }
 
 
-
         if(
             event.target.id
             ===
             "nextBtn"
         ) {
 
-            nextSong(1);
+            nextSong(
+                1
+            );
 
         }
-
 
 
         if(
@@ -1642,10 +2599,11 @@ document
             "prevBtn"
         ) {
 
-            nextSong(-1);
+            nextSong(
+                -1
+            );
 
         }
-
 
 
         if(
@@ -1661,17 +2619,18 @@ document
         ) {
 
             const id =
-            currentSongId();
+                currentSongId();
 
 
             if(id) {
 
-                toggleFavorite(id);
+                await toggleFavorite(
+                    id
+                );
 
             }
 
         }
-
 
 
         if(
@@ -1681,7 +2640,7 @@ document
         ) {
 
             const id =
-            currentSongId();
+                currentSongId();
 
 
             if(
@@ -1692,22 +2651,23 @@ document
                 )
             ) {
 
-                await deleteSong(id);
-
-
-                localStorage
-                .removeItem(
-                    "novaCurrentId"
+                await deleteSong(
+                    id
                 );
 
 
+                localStorage
+                    .removeItem(
+                        "novaCurrentId"
+                    );
+
+
                 location.href =
-                "biblioteca.html";
+                    "biblioteca.html";
 
             }
 
         }
-
 
 
         if(
@@ -1718,7 +2678,7 @@ document
 
             if(
                 confirm(
-                    "¿Borrar toda tu música?"
+                    "¿Borrar toda tu biblioteca?"
                 )
             ) {
 
@@ -1726,96 +2686,85 @@ document
 
 
                 localStorage
-                .removeItem(
-                    "novaCurrentId"
-                );
+                    .removeItem(
+                        "novaCurrentId"
+                    );
 
 
-                await refresh();
+                await refreshSongs();
 
             }
 
         }
 
 
-
         if(
             event.target
-            .classList
-            .contains(
-                "tab"
-            )
+                .classList
+                .contains(
+                    "tab"
+                )
         ) {
 
             document
-            .querySelectorAll(
-                ".tab"
-            )
-            .forEach(
-                tab => {
+                .querySelectorAll(
+                    ".tab"
+                )
+                .forEach(tab => {
 
                     tab
-                    .classList
-                    .remove(
-                        "active"
-                    );
+                        .classList
+                        .remove(
+                            "active"
+                        );
 
-                }
-            );
+                });
 
 
             event.target
-            .classList
-            .add(
-                "active"
-            );
+                .classList
+                .add(
+                    "active"
+                );
 
 
             const filter =
-            event.target
-            .dataset
-            .filter;
+                event.target
+                    .dataset
+                    .filter;
 
 
             let result =
-            songs;
+                songs;
 
 
             if(
-                filter
-                ===
+                filter ===
                 "favorites"
             ) {
 
                 result =
-
-                songs.filter(
-                    song =>
-                    song.favorite
-                );
+                    songs.filter(
+                        song =>
+                            song.favorite
+                    );
 
             }
 
 
             if(
-                filter
-                ===
+                filter ===
                 "recent"
             ) {
 
                 result =
-
-                [...songs]
-                .sort(
-                    (a,b) =>
-
-                    (b.lastPlayed || 0)
-
-                    -
-
-                    (a.lastPlayed || 0)
-
-                );
+                    [...songs]
+                        .sort(
+                            (a, b) =>
+                                (b.lastPlayed || 0)
+                                -
+                                (a.lastPlayed || 0)
+                        );
 
             }
 
@@ -1832,76 +2781,18 @@ document
 
         }
 
-
-
-        if(
-            event.target
-            .classList
-            .contains(
-                "genre-card"
-            )
-        ) {
-
-            filterGenre(
-
-                event.target
-                .dataset
-                .genre
-
-            );
-
-        }
-
-
-
-        if(
-            event.target.id
-            ===
-            "installAppBtn"
-        ) {
-
-            if(
-                deferredPrompt
-            ) {
-
-                deferredPrompt
-                .prompt();
-
-
-                await deferredPrompt
-                .userChoice;
-
-
-                deferredPrompt =
-                null;
-
-            }
-            else {
-
-                alert(
-
-                    "Abre el menú de tu navegador y selecciona 'Instalar aplicación' o 'Agregar a pantalla de inicio'."
-
-                );
-
-            }
-
-        }
-
     }
 );
 
 
 
-/* ==================================
+/* =========================================================
    INPUTS
-================================== */
+========================================================= */
 
-document
-.addEventListener(
+document.addEventListener(
     "input",
     event => {
-
 
         if(
             event.target.id
@@ -1909,24 +2800,25 @@ document
             "searchInput"
         ) {
 
-            searchSongs();
+            searchLocal();
 
         }
-
 
 
         if(
             event.target.id
             ===
             "seek"
+
             &&
+
             audio
         ) {
 
             audio.currentTime =
-            Number(
-                event.target.value
-            );
+                Number(
+                    event.target.value
+                );
 
         }
 
@@ -1935,11 +2827,9 @@ document
 
 
 
-document
-.addEventListener(
+document.addEventListener(
     "change",
     async event => {
-
 
         if(
             event.target.id
@@ -1948,50 +2838,14 @@ document
         ) {
 
             await importMusic(
-
                 [
                     ...event.target.files
                 ]
-
             );
 
 
             event.target.value =
-            "";
-
-        }
-
-
-
-        if(
-            event.target.id
-            ===
-            "compactToggle"
-        ) {
-
-            document.body
-            .classList
-            .toggle(
-
-                "compact",
-
-                event.target.checked
-
-            );
-
-
-            localStorage
-            .setItem(
-
-                "compact",
-
-                event.target.checked
-                ?
-                "1"
-                :
-                "0"
-
-            );
+                "";
 
         }
 
@@ -2000,61 +2854,56 @@ document
 
 
 
-/* ==================================
+/* =========================================================
    AUDIO EVENTS
-================================== */
+========================================================= */
 
 if(audio) {
 
-
-    audio
-    .addEventListener(
+    audio.addEventListener(
         "play",
         syncPlayButton
     );
 
 
-    audio
-    .addEventListener(
+    audio.addEventListener(
         "pause",
         syncPlayButton
     );
 
 
-    audio
-    .addEventListener(
+    audio.addEventListener(
         "loadedmetadata",
         () => {
 
-
             const seek =
-            document.getElementById(
-                "seek"
-            );
+                document.getElementById(
+                    "seek"
+                );
 
 
             if(seek) {
 
                 seek.max =
-                audio.duration
-                ||
-                1;
+                    audio.duration
+                    ||
+                    1;
 
             }
 
 
             const duration =
-            document.getElementById(
-                "duration"
-            );
+                document.getElementById(
+                    "duration"
+                );
 
 
             if(duration) {
 
                 duration.textContent =
-                formatTime(
-                    audio.duration
-                );
+                    formatDuration(
+                        audio.duration
+                    );
 
             }
 
@@ -2062,40 +2911,38 @@ if(audio) {
     );
 
 
-    audio
-    .addEventListener(
+    audio.addEventListener(
         "timeupdate",
         () => {
 
-
             const seek =
-            document.getElementById(
-                "seek"
-            );
+                document.getElementById(
+                    "seek"
+                );
 
 
             if(seek) {
 
                 seek.value =
-                audio.currentTime
-                ||
-                0;
+                    audio.currentTime
+                    ||
+                    0;
 
             }
 
 
             const current =
-            document.getElementById(
-                "currentTime"
-            );
+                document.getElementById(
+                    "currentTime"
+                );
 
 
             if(current) {
 
                 current.textContent =
-                formatTime(
-                    audio.currentTime
-                );
+                    formatDuration(
+                        audio.currentTime
+                    );
 
             }
 
@@ -2103,12 +2950,13 @@ if(audio) {
     );
 
 
-    audio
-    .addEventListener(
+    audio.addEventListener(
         "ended",
         () => {
 
-            nextSong(1);
+            nextSong(
+                1
+            );
 
         }
     );
@@ -2117,23 +2965,21 @@ if(audio) {
 
 
 
-/* ==================================
+/* =========================================================
    PWA
-================================== */
+========================================================= */
 
-window
-.addEventListener(
+window.addEventListener(
     "beforeinstallprompt",
     event => {
 
         event.preventDefault();
 
         deferredPrompt =
-        event;
+            event;
 
     }
 );
-
 
 
 if(
@@ -2142,16 +2988,15 @@ if(
     navigator
 ) {
 
-    window
-    .addEventListener(
+    window.addEventListener(
         "load",
         () => {
 
             navigator
-            .serviceWorker
-            .register(
-                "sw.js"
-            );
+                .serviceWorker
+                .register(
+                    "sw.js"
+                );
 
         }
     );
@@ -2160,39 +3005,41 @@ if(
 
 
 
-/* ==================================
+/* =========================================================
    INIT
-================================== */
+========================================================= */
 
 async function init() {
 
-    db =
-    await openDB();
+    try {
+
+        db =
+            await openDB();
 
 
-    songs =
-    await getAllSongs();
+        songs =
+            await getAllSongs();
 
 
-    if(
-        localStorage
-        .getItem(
-            "compact"
-        )
-        ===
-        "1"
-    ) {
+        songs.sort(
+            (a, b) =>
+                b.addedAt
+                -
+                a.addedAt
+        );
 
-        document.body
-        .classList
-        .add(
-            "compact"
+
+        renderCurrentPage();
+
+    }
+    catch(error) {
+
+        console.error(
+            "ERROR INICIANDO NOVA MUSIC:",
+            error
         );
 
     }
-
-
-    renderPage();
 
 }
 

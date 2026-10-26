@@ -1,155 +1,312 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#06111b">
 
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
 
-  <title>Buscar - Nova Music</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover"
+    >
+
+    <meta
+        name="theme-color"
+        content="#06111b"
+    >
+
+    <link
+        rel="manifest"
+        href="manifest.json"
+    >
+
+    <link
+        rel="stylesheet"
+        href="styles.css"
+    >
+
+    <title>Buscar - Nova Music</title>
+
 </head>
+
 
 <body>
 
-<main class="phone" data-page="search">
 
-  <div class="status-bar">
-    <span>9:41</span>
-    <div class="status-icons">▮▮▮ ))) ▣</div>
-  </div>
+<main
+    class="phone"
+    data-page="search"
+>
 
-  <section class="view">
 
-    <header class="page-header">
-      <h1>Buscar</h1>
-    </header>
+    <!-- STATUS BAR -->
 
-    <div class="search-box">
+    <div class="status-bar">
 
-      <span class="search-icon">⌕</span>
+        <span>
+            9:41
+        </span>
 
-      <input
-        id="searchInput"
-        type="search"
-        placeholder="Canciones, artistas..."
-        autofocus
-      >
+        <div class="status-icons">
+            ▮▮▮ ))) ▣
+        </div>
 
     </div>
 
-    <div class="section-header">
 
-      <h2>Resultados</h2>
 
-      <button data-action="add-music">
-        ＋ Agregar
-      </button>
+    <section class="view">
 
-    </div>
+
+        <!-- HEADER -->
+
+        <header class="page-header">
+
+            <h1>
+                Buscar
+            </h1>
+
+        </header>
+
+
+
+        <!-- BUSCADOR -->
+
+        <div class="search-box">
+
+            <span class="search-icon">
+                ⌕
+            </span>
+
+            <input
+                id="searchInput"
+                type="search"
+                placeholder="URL o ID de YouTube..."
+            >
+
+        </div>
+
+
+
+        <!-- BUSCAR INTERNET -->
+
+        <button
+            id="youtubeSearchBtn"
+            class="primary-wide online-search-btn"
+        >
+
+            Buscar en línea
+
+        </button>
+
+
+
+        <!-- RESULTADO API -->
+
+        <div
+            id="youtubeResult"
+            class="youtube-results"
+        >
+        </div>
+
+
+
+        <!-- BIBLIOTECA LOCAL -->
+
+        <div class="section-header">
+
+            <h2>
+                Tu música
+            </h2>
+
+            <button
+                data-action="add-music"
+            >
+
+                ＋ Agregar
+
+            </button>
+
+        </div>
+
+
+
+        <div
+            id="searchResults"
+            class="song-list"
+        >
+        </div>
+
+
+
+        <div
+            id="searchEmpty"
+            class="empty-state"
+        >
+
+            <div class="empty-music">
+                ⌕
+            </div>
+
+            <p>
+                Busca en tu biblioteca o pega una URL.
+            </p>
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- MINI PLAYER -->
 
     <div
-      id="searchResults"
-      class="song-list">
+        id="globalMiniPlayer"
+        class="mini-player hidden"
+    >
+
+        <div class="mini-cover">
+            ♫
+        </div>
+
+
+        <div class="mini-info">
+
+            <strong id="miniTitle">
+            </strong>
+
+            <span id="miniArtist">
+            </span>
+
+        </div>
+
+
+        <button id="miniPlayBtn">
+            ▶
+        </button>
+
+
+        <a href="reproductor.html">
+            ☷
+        </a>
+
     </div>
 
-    <div
-      id="searchEmpty"
-      class="empty-state">
-
-      <div class="empty-music">
-        ⌕
-      </div>
-
-      <p>
-        Escribe algo para buscar.
-      </p>
-
-    </div>
-
-  </section>
 
 
-  <div
-    id="globalMiniPlayer"
-    class="mini-player hidden">
+    <!-- NAV -->
 
-    <div class="mini-cover">♫</div>
-
-    <div class="mini-info">
-      <strong id="miniTitle"></strong>
-      <span id="miniArtist"></span>
-    </div>
-
-    <button id="miniPlayBtn">
-      ▶
-    </button>
-
-    <a href="reproductor.html">
-      ☷
-    </a>
-
-  </div>
+    <nav class="bottom-nav">
 
 
-  <nav class="bottom-nav">
+        <a
+            href="index.html"
+            class="nav-button"
+            data-page="home"
+        >
 
-    <a href="index.html"
-       class="nav-button"
-       data-page="home">
+            <span>
+                ⬟
+            </span>
 
-      <span>⬟</span>
-      <small>Inicio</small>
+            <small>
+                Inicio
+            </small>
 
-    </a>
-
-    <a href="buscar.html"
-       class="nav-button"
-       data-page="search">
-
-      <span>⌕</span>
-      <small>Buscar</small>
-
-    </a>
-
-    <a href="biblioteca.html"
-       class="nav-button"
-       data-page="library">
-
-      <span>▥</span>
-      <small>Biblioteca</small>
-
-    </a>
-
-    <a href="premium.html"
-       class="nav-button"
-       data-page="premium">
-
-      <span>◇</span>
-      <small>Premium</small>
-
-    </a>
-
-  </nav>
+        </a>
 
 
-  <input
-    id="fileInput"
-    type="file"
-    accept="audio/*"
-    multiple
-    hidden
-  >
 
-  <audio
-    id="audio"
-    preload="metadata">
-  </audio>
+        <a
+            href="buscar.html"
+            class="nav-button"
+            data-page="search"
+        >
+
+            <span>
+                ⌕
+            </span>
+
+            <small>
+                Buscar
+            </small>
+
+        </a>
+
+
+
+        <a
+            href="biblioteca.html"
+            class="nav-button"
+            data-page="library"
+        >
+
+            <span>
+                ▥
+            </span>
+
+            <small>
+                Biblioteca
+            </small>
+
+        </a>
+
+
+
+        <a
+            href="premium.html"
+            class="nav-button"
+            data-page="premium"
+        >
+
+            <span>
+                ◇
+            </span>
+
+            <small>
+                Premium
+            </small>
+
+        </a>
+
+
+    </nav>
+
+
+
+    <!-- IMPORTAR MÚSICA -->
+
+    <input
+        id="fileInput"
+        type="file"
+        accept="audio/*"
+        multiple
+        hidden
+    >
+
+
+
+    <audio
+        id="audio"
+        preload="metadata"
+    >
+    </audio>
+
 
 </main>
 
+
+
+<!-- API PRIMERO -->
+
+<script src="api.js"></script>
+
+<!-- APP DESPUÉS -->
+
 <script src="app.js"></script>
 
+
 </body>
+
 </html>

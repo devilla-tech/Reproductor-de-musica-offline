@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1">
+
+  <meta
+    name="theme-color"
+    content="#06111b">
+
+  <link
+    rel="stylesheet"
+    href="styles.css">
+
+  <link
+    rel="manifest"
+    href="manifest.json">
+
+  <title>Descargar música</title>
+</head>
+
+<body>
+
+<main
+  class="phone"
+  data-page="download"
+>
+
+  <div class="status-bar">
+
+    <span>
+      9:41
+    </span>
+
+    <div class="status-icons">
+      ▮▮▮ ))) ▣
+    </div>
+
+  </div>
+
+
+  <section class="view">
+
+    <header class="page-header">
+
+      <a
+        href="index.html"
+        class="back-link"
+      >
+        ‹
+      </a>
+
+      <h1>
+        Descargar
+      </h1>
+
+      <span></span>
+
+    </header>
+
+
+    <div class="feature-hero">
+
+      <div class="feature-icon">
+        ↓
+      </div>
+
+      <h2>
+        Descargar música
+      </h2>
+
+      <p>
+        Pega la URL directa de un archivo MP3,
+        M4A, WAV u OGG.
+      </p>
+
+    </div>
+
+
+    <div class="download-form">
+
+      <label>
+        URL de la canción
+      </label>
+
+      <input
+        id="musicUrl"
+        type="url"
+        placeholder="https://servidor.com/cancion.mp3"
+      >
+
+
+      <label>
+        Nombre
+      </label>
+
+      <input
+        id="musicTitle"
+        type="text"
+        placeholder="Nombre de la canción"
+      >
+
+
+      <label>
+        Artista
+      </label>
+
+      <input
+        id="musicArtist"
+        type="text"
+        placeholder="Nombre del artista"
+      >
+
+
+      <button
+        id="downloadMusicBtn"
+        class="primary-wide"
+      >
+        ↓ Descargar y guardar
+      </button>
+
+
+      <p
+        id="downloadStatus"
+        class="download-status"
+      >
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <nav class="bottom-nav">
+
+    <a
+      href="index.html"
+      class="nav-button"
+    >
+      <span>⬟</span>
+      <small>Inicio</small>
+    </a>
+
+
+    <a
+      href="buscar.html"
+      class="nav-button"
+    >
+      <span>⌕</span>
+      <small>Buscar</small>
+    </a>
+
+
+    <a
+      href="biblioteca.html"
+      class="nav-button"
+    >
+      <span>▥</span>
+      <small>Biblioteca</small>
+    </a>
+
+
+    <a
+      href="descargar.html"
+      class="nav-button active"
+    >
+      <span>↓</span>
+      <small>Descargar</small>
+    </a>
+
+  </nav>
+
+</main>
+
+
+<script src="app.js"></script>
+
+</body>
+
+</html>

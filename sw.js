@@ -1,5 +1,5 @@
 const CACHE =
-"nova-music-v3";
+    "nova-music-v4";
 
 
 const FILES = [
@@ -32,6 +32,8 @@ const FILES = [
 
     "./app.js",
 
+    "./api.js",
+
     "./manifest.json",
 
     "./icons/icon-192.svg",
@@ -53,14 +55,10 @@ self.addEventListener(
                 CACHE
             )
             .then(
-                cache => {
-
-                    return cache
-                    .addAll(
+                cache =>
+                    cache.addAll(
                         FILES
-                    );
-
-                }
+                    )
             )
 
         );
@@ -82,29 +80,25 @@ self.addEventListener(
             caches
             .keys()
             .then(
-                keys => {
+                keys =>
 
-                    return Promise
-                    .all(
+                    Promise.all(
 
                         keys
 
                         .filter(
                             key =>
-                            key !== CACHE
+                                key !== CACHE
                         )
 
                         .map(
                             key =>
-                            caches
-                            .delete(
-                                key
-                            )
+                                caches.delete(
+                                    key
+                                )
                         )
 
-                    );
-
-                }
+                    )
             )
 
         );
@@ -122,10 +116,41 @@ self.addEventListener(
     event => {
 
         if(
-            event.request.method
-            !==
+            event.request.method !==
             "GET"
         ) {
+
+            return;
+
+        }
+
+
+        /*
+           Solo cacheamos archivos
+           de nuestra PWA.
+
+           No intentamos cachear
+           las llamadas de RapidAPI.
+        */
+
+        const requestUrl =
+            new URL(
+                event.request.url
+            );
+
+
+        if(
+            requestUrl.hostname
+            .includes(
+                "rapidapi.com"
+            )
+        ) {
+
+            event.respondWith(
+                fetch(
+                    event.request
+                )
+            );
 
             return;
 
@@ -151,12 +176,11 @@ self.addEventListener(
                     return fetch(
                         event.request
                     )
-
                     .then(
                         response => {
 
                             const copy =
-                            response.clone();
+                                response.clone();
 
 
                             caches
@@ -176,17 +200,6 @@ self.addEventListener(
 
 
                             return response;
-
-                        }
-                    )
-
-                    .catch(
-                        () => {
-
-                            return caches
-                            .match(
-                                "./index.html"
-                            );
 
                         }
                     );

@@ -1410,4 +1410,309 @@ button {
 
     }
 
+}.download-form {
+
+    margin-top: 25px;
+
+    display: grid;
+
+    gap: 12px;
+
+}
+
+
+.download-form label {
+
+    color: #a8b7ca;
+
+    font-size: 13px;
+
+}
+
+
+.download-form input {
+
+    width: 100%;
+
+    padding: 13px 14px;
+
+    border: 1px solid rgba(255,255,255,.08);
+
+    border-radius: 12px;
+
+    outline: none;
+
+    background: #152230;
+
+    color: white;
+
+}
+
+
+.download-form input:focus {
+
+    border-color: #8e3fff;
+
+}
+
+
+.download-status {
+
+    min-height: 22px;
+
+    text-align: center;
+
+    color: #9eb0c6;
+
+    font-size: 13px;
+
+}.youtube-results {
+
+    margin-top: 20px;
+
+}
+
+
+.youtube-card {
+
+    overflow: hidden;
+
+    border-radius: 18px;
+
+    background: #111d2b;
+
+    border:
+
+        1px solid
+
+        rgba(255,255,255,.08);
+
+}
+
+
+.youtube-cover {
+
+    display: block;
+
+    width: 100%;
+
+    aspect-ratio: 16 / 9;
+
+    object-fit: cover;
+
+}
+
+
+.youtube-card-info {
+
+    padding: 15px;
+
+}
+
+
+.youtube-card-info h3 {
+
+    margin:
+
+        0
+
+        0
+
+        6px;
+
+    font-size: 17px;
+
+}
+
+
+.youtube-card-info p {
+
+    margin:
+
+        0
+
+        0
+
+        5px;
+
+    color: #9bacbf;
+
+}
+
+
+.youtube-card-info span {
+
+    display: block;
+
+    margin-bottom: 15px;
+
+    color: #778aa1;
+
+    font-size: 13px;
+
+}
+
+
+.loading-api {
+
+    padding: 30px;
+
+    text-align: center;
+
+    color: #9b60ff;
+
+}
+
+
+.api-error {
+
+    color: #ff6d7e;
+
+}.online-search-btn {
+
+    width: 100%;
+
+    margin-top: 12px;
+
+}
+
+
+.youtube-results {
+
+    margin-top: 18px;
+
+}
+
+
+.youtube-card {
+
+    overflow: hidden;
+
+    border-radius: 18px;
+
+    background: #111d2b;
+
+    border:
+
+        1px solid
+
+        rgba(255,255,255,.08);
+
+}
+
+
+.youtube-cover {
+
+    display: block;
+
+    width: 100%;
+
+    aspect-ratio: 16 / 9;
+
+    object-fit: cover;
+
+}
+
+
+.youtube-card-info {
+
+    padding: 16px;
+
+}
+
+
+.youtube-card-info h3 {
+
+    margin:
+
+        0
+
+        0
+
+        7px;
+
+    font-size: 17px;
+
+}
+
+
+.youtube-card-info p {
+
+    margin:
+
+        0
+
+        0
+
+        6px;
+
+    color: #9bacbf;
+
+}
+
+
+.youtube-card-info span {
+
+    display: block;
+
+    margin-bottom: 16px;
+
+    color: #778aa1;
+
+    font-size: 13px;
+
+}
+
+
+.loading-api {
+
+    padding: 30px;
+
+    text-align: center;
+
+    color: #a262ff;
+
+}
+
+
+.api-error {
+
+    padding: 12px;
+
+    color: #ff7182;
+
+    text-align: center;
+
+}
+
+
+.download-online:disabled {
+
+    opacity: .65;
+
+    cursor: wait;
+
+}
+
+
+.song-image {
+
+    width: 100%;
+
+    height: 100%;
+
+    border-radius: inherit;
+
+    object-fit: cover;
+
+}.download-message {
+    margin-top: 12px;
+    color: #9fb0c7;
+    font-size: 13px;
+    text-align: center;
+}
+
+.download-online:disabled {
+    opacity: .6;
+    cursor: wait;
 }
